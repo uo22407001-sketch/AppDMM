@@ -6,6 +6,178 @@
 <title>DMM App – Dieta Mediterránea Mexicanizada & Cacao Mx</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800;900&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script type="module">
+// ═══════════════════════════════════════════
+//  FIREBASE — configuración y lógica de auth
+// ═══════════════════════════════════════════
+import { initializeApp }                        from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+         signOut, sendPasswordResetEmail, onAuthStateChanged, updateProfile }
+                                                from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+import { getFirestore, doc, setDoc, getDoc, collection,
+         addDoc, getDocs, query, orderBy, deleteDoc }
+                                                from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey:            "AIzaSyBC-R8kFLCtdLMTiiGNvOGjrODylVE0ql0",
+  authDomain:        "dmm-app-36491.firebaseapp.com",
+  projectId:         "dmm-app-36491",
+  storageBucket:     "dmm-app-36491.firebasestorage.app",
+  messagingSenderId: "724713942855",
+  appId:             "1:724713942855:web:4a9e54d784a541748ea662"
+};
+
+const fbApp  = initializeApp(firebaseConfig);
+const auth   = getAuth(fbApp);
+const db     = getFirestore(fbApp);
+
+// ── Spinner helper ───────────────────────────────────────────────────────────
+function setLoading(btnId, isLoading, label=''){
+  const btn = document.getElementById(btnId);
+  if(!btn) return;
+  btn.disabled = isLoading;
+  btn.textContent = isLoading ? '⏳ Espera...' : label;
+}
+
+// ── Estado de sesión — Firebase detecta automáticamente ─────────────────────
+onAuthStateChanged(auth, async (fbUser) => {
+  if(fbUser){
+    // Cargar perfil de Firestore
+    const snap = await getDoc(doc(db, 'usuarios', fbUser.uid));
+    if(snap.exists()){
+      window.user = { uid: fbUser.uid, ...snap.data() };
+    } else {
+      window.user = { uid: fbUser.uid, name: fbUser.displayName || fbUser.email.split('@')[0], email: fbUser.email, sexo:'', municipio:'', year:'' };
+    }
+    // Cargar mediciones desde Firestore
+    const medsQ = query(collection(db,'usuarios',fbUser.uid,'mediciones'), orderBy('ts','asc'));
+    const medsSnap = await getDocs(medsQ);
+    window.mediciones = medsSnap.docs.map(d=>({id:d.id,...d.data()}));
+
+    window.updateUserUI();
+    window.navigate('screen-home');
+    document.getElementById('bottom-nav').style.display = 'flex';
+  } else {
+    window.user = null;
+    window.mediciones = [];
+    window.navigate('screen-login','back');
+    document.getElementById('bottom-nav').style.display = 'none';
+  }
+});
+
+// ── LOGIN ────────────────────────────────────────────────────────────────────
+window.doLogin = async function(){
+  const email = document.getElementById('login-user').value.trim();
+  const pass  = document.getElementById('login-pass').value;
+  if(!email || !pass){ window.showToast('Completa correo y contraseña'); return; }
+  if(!email.includes('@')){ window.showToast('Ingresa un correo válido'); return; }
+  setLoading('btn-login', true);
+  try{
+    await signInWithEmailAndPassword(auth, email, pass);
+    // onAuthStateChanged se encarga del resto
+  } catch(e){
+    const msgs = {
+      'auth/user-not-found':   '❌ No existe una cuenta con ese correo',
+      'auth/wrong-password':   '❌ Contraseña incorrecta',
+      'auth/invalid-email':    '❌ Correo no válido',
+      'auth/too-many-requests':'⚠️ Demasiados intentos. Espera unos minutos',
+      'auth/invalid-credential':'❌ Correo o contraseña incorrectos',
+    };
+    window.showToast(msgs[e.code] || '❌ Error: ' + e.message);
+  } finally {
+    setLoading('btn-login', false, 'Iniciar sesión');
+  }
+};
+
+// ── REGISTRO ─────────────────────────────────────────────────────────────────
+window.doRegister = async function(){
+  const name      = document.getElementById('reg-name').value.trim();
+  const email     = document.getElementById('reg-email').value.trim();
+  const pass      = document.getElementById('reg-pass').value;
+  const pass2     = document.getElementById('reg-pass2').value;
+  const municipio = document.getElementById('reg-municipio').value;
+  const sexo      = document.getElementById('reg-sexo').value;
+  const year      = document.getElementById('reg-year').value;
+
+  if(!name || !email || !pass){ window.showToast('Completa nombre, correo y contraseña'); return; }
+  if(!email.includes('@'))    { window.showToast('Ingresa un correo válido'); return; }
+  if(pass.length < 6)         { window.showToast('La contraseña debe tener mínimo 6 caracteres'); return; }
+  if(pass !== pass2)          { window.showToast('Las contraseñas no coinciden'); return; }
+  if(!sexo)                   { window.showToast('Selecciona sexo biológico'); return; }
+
+  setLoading('btn-register', true);
+  try{
+    const cred = await createUserWithEmailAndPassword(auth, email, pass);
+    await updateProfile(cred.user, { displayName: name });
+    // Guardar perfil en Firestore
+    await setDoc(doc(db,'usuarios', cred.user.uid), {
+      name, email, sexo, municipio, year,
+      creadoEn: new Date().toISOString()
+    });
+    window.showToast('✅ ¡Cuenta creada! Bienvenido/a ' + name);
+    // onAuthStateChanged navega automáticamente
+  } catch(e){
+    const msgs = {
+      'auth/email-already-in-use': '❌ Ese correo ya tiene una cuenta',
+      'auth/invalid-email':        '❌ Correo no válido',
+      'auth/weak-password':        '❌ Contraseña muy débil (mín. 6 caracteres)',
+    };
+    window.showToast(msgs[e.code] || '❌ Error: ' + e.message);
+  } finally {
+    setLoading('btn-register', false, 'Crear cuenta');
+  }
+};
+
+// ── RECUPERAR CONTRASEÑA ─────────────────────────────────────────────────────
+window.doForgotPassword = async function(){
+  const email = document.getElementById('login-user').value.trim();
+  if(!email || !email.includes('@')){ window.showToast('Escribe tu correo en el campo de arriba'); return; }
+  try{
+    await sendPasswordResetEmail(auth, email);
+    window.showToast('📧 Revisa tu correo para restablecer la contraseña');
+  } catch(e){
+    window.showToast(e.code === 'auth/user-not-found' ? '❌ No existe cuenta con ese correo' : '❌ Error al enviar correo');
+  }
+};
+
+// ── LOGOUT ───────────────────────────────────────────────────────────────────
+window.doLogout = async function(){
+  await signOut(auth);
+  window.mediciones = [];
+  document.getElementById('login-user').value = '';
+  document.getElementById('login-pass').value = '';
+  // onAuthStateChanged navega a login
+};
+
+// ── GUARDAR MEDICIÓN en Firestore ─────────────────────────────────────────────
+window.guardarMedicionFirebase = async function(m){
+  if(!window.user || !window.user.uid) return;
+  try{
+    const docRef = await addDoc(collection(db,'usuarios',window.user.uid,'mediciones'), m);
+    m.id = docRef.id;
+    window.showToast('✅ Medición guardada y sincronizada ☁️');
+  } catch(e){
+    window.showToast('⚠️ Guardado local. Sin conexión: ' + e.message);
+  }
+};
+
+// ── GUARDAR PERFIL en Firestore ───────────────────────────────────────────────
+window.saveProfileFirebase = async function(){
+  if(!window.user) return;
+  const name  = document.getElementById('edit-name').value.trim()  || window.user.name;
+  const sexo  = document.getElementById('edit-sexo').value;
+  window.user.name = name;
+  window.user.sexo = sexo;
+  try{
+    await setDoc(doc(db,'usuarios',window.user.uid), { name, sexo, email:window.user.email, municipio:window.user.municipio||'', year:window.user.year||'' }, {merge:true});
+    window.showToast('✅ Perfil actualizado en la nube');
+  } catch(e){
+    window.showToast('⚠️ Error al guardar perfil');
+  }
+  window.updateUserUI();
+  window.closeModal('modal-perfil');
+};
+</script>
 <style>
   /* ===== VARIABLES ===== */
   :root {
@@ -748,7 +920,8 @@
         </label>
         <a class="login-forgot" href="#" onclick="showToast('Revisa tu correo electrónico');return false;">Olvidé mi contraseña</a>
       </div>
-      <button class="btn-primary fade-up fade-up-4" onclick="doLogin()">Iniciar sesión</button>
+      <button class="btn-primary fade-up fade-up-4" id="btn-login" onclick="doLogin()">Iniciar sesión</button>
+      <p style="text-align:center;margin-top:12px;"><a class="login-forgot" href="#" onclick="doForgotPassword();return false;">Olvidé mi contraseña</a></p>
       <p class="login-register fade-up fade-up-5">¿Aún no tiene un cuenta? <a onclick="navigate('screen-register')">Registrarse</a></p>
     </div>
   </div>
@@ -778,6 +951,10 @@
       <div class="form-group">
         <label class="form-label">Contraseña</label>
         <input class="form-input" type="password" id="reg-pass" placeholder="Mínimo 6 caracteres">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Confirmar contraseña</label>
+        <input class="form-input" type="password" id="reg-pass2" placeholder="Repite tu contraseña">
       </div>
       <div class="form-group">
         <label class="form-label">Municipio en Tabasco</label>
@@ -810,7 +987,7 @@
         <input class="form-input" type="number" id="reg-year" placeholder="Ej. 1990" min="1930" max="2010">
       </div>
       <div style="height:12px"></div>
-      <button class="btn-primary" onclick="doRegister()">Crear cuenta</button>
+      <button class="btn-primary" id="btn-register" onclick="doRegister()">Crear cuenta</button>
       <button class="btn-outline-white" onclick="navigate('screen-login','back')">Ya tengo cuenta</button>
     </div>
   </div>
@@ -1868,18 +2045,16 @@ let currentMenuTab = 'estacion';
 let currentMonth = new Date().getMonth() + 1;
 
 function loadState(){
+  // Firebase onAuthStateChanged maneja la sesión automáticamente.
+  // localStorage solo se usa como caché offline de emergencia.
   try{
-    const u = localStorage.getItem('dmm_user');
-    if(u) user = JSON.parse(u);
-    const m = localStorage.getItem('dmm_mediciones');
-    if(m) mediciones = JSON.parse(m);
+    const m = localStorage.getItem('dmm_mediciones_cache');
+    if(m && !mediciones.length) mediciones = JSON.parse(m);
   }catch(e){}
 }
 function saveState(){
-  try{
-    if(user) localStorage.setItem('dmm_user', JSON.stringify(user));
-    localStorage.setItem('dmm_mediciones', JSON.stringify(mediciones));
-  }catch(e){}
+  // Caché local de mediciones para uso offline
+  try{ localStorage.setItem('dmm_mediciones_cache', JSON.stringify(mediciones)); }catch(e){}
 }
 
 // ═══════════════════════════════════════════
@@ -1942,43 +2117,14 @@ function goBack(){
 // ═══════════════════════════════════════════
 //  AUTH
 // ═══════════════════════════════════════════
-function doLogin(){
-  const u = document.getElementById('login-user').value.trim();
-  const p = document.getElementById('login-pass').value;
-  if(!u || !p){ showToast('Completa todos los campos'); return; }
-  // Accept demo or stored user
-  if(!user){
-    user = {name: u.includes('@') ? u.split('@')[0] : u, email: u, sexo:'', municipio:'', year:''};
-  }
-  saveState();
-  updateUserUI();
-  navigate('screen-home');
-}
-
-function doRegister(){
-  const name = document.getElementById('reg-name').value.trim();
-  const email = document.getElementById('reg-email').value.trim();
-  const pass = document.getElementById('reg-pass').value;
-  const municipio = document.getElementById('reg-municipio').value;
-  const sexo = document.getElementById('reg-sexo').value;
-  const year = document.getElementById('reg-year').value;
-  if(!name||!email||!pass){ showToast('Completa nombre, correo y contraseña'); return; }
-  if(pass.length < 6){ showToast('La contraseña debe tener mínimo 6 caracteres'); return; }
-  user = {name, email, sexo, municipio, year};
-  saveState();
-  updateUserUI();
-  showToast('¡Cuenta creada! Bienvenido/a '+name);
-  navigate('screen-home');
-}
-
-function doLogout(){
-  user = null;
-  mediciones = [];
-  localStorage.clear();
-  navigate('screen-login','back');
-  document.getElementById('login-user').value='';
-  document.getElementById('login-pass').value='';
-}
+// ═══════════════════════════════════════════
+//  AUTH — implementadas en el módulo Firebase (ver <script type="module">)
+//  Estas funciones son placeholders por si el módulo tarda en cargar.
+// ═══════════════════════════════════════════
+function doLogin(){    window.showToast('⏳ Inicializando Firebase...'); }
+function doRegister(){ window.showToast('⏳ Inicializando Firebase...'); }
+function doLogout(){   window.showToast('⏳ Inicializando Firebase...'); }
+function doForgotPassword(){ window.showToast('⏳ Inicializando Firebase...'); }
 
 function updateUserUI(){
   if(!user) return;
@@ -2240,7 +2386,9 @@ function guardarMedicion(){
 
   mediciones.push(m);
   saveState();
-  showToast('✅ Medición guardada correctamente');
+  // Sincronizar con Firebase si está disponible
+  if(window.guardarMedicionFirebase) window.guardarMedicionFirebase(m);
+  else showToast('✅ Medición guardada correctamente');
 
   // Reset
   ['r-peso','r-talla','r-cintura','r-cadera','r-tas','r-tad','r-pulso','r-dino','r-grasa','r-musculo','r-osea','r-gvisceral','r-edadmeta','r-notas'].forEach(id=>{
@@ -2522,6 +2670,8 @@ function openModalEditProfile(){
 }
 
 function saveProfile(){
+  if(window.saveProfileFirebase){ window.saveProfileFirebase(); return; }
+  // Fallback sin Firebase
   if(!user) user={};
   user.name = document.getElementById('edit-name').value.trim() || user.name;
   user.email = document.getElementById('edit-email').value.trim() || user.email;
@@ -2558,13 +2708,9 @@ function openMenu(){ showToast('Menú de opciones'); }
 // ═══════════════════════════════════════════
 //  INIT
 // ═══════════════════════════════════════════
+// Firebase onAuthStateChanged maneja la navegación inicial.
+// loadState solo recupera caché local de mediciones.
 loadState();
-if(user){
-  updateUserUI();
-  navigate('screen-home');
-} else {
-  document.getElementById('screen-login').classList.remove('hidden');
-}
 </script>
 </body>
 </html>
