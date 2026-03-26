@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>DMM App – Dieta Mediterránea Mexicanizada & Cacao Mx</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800;900&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
   /* ===== VARIABLES ===== */
   :root {
@@ -1279,6 +1280,18 @@
         <div class="card-body" id="historial-list">
           <p style="color:var(--gray-mid);text-align:center;padding:16px 0;">Sin mediciones registradas aún.<br>Presiona "Registrar nueva medición" para comenzar.</p>
         </div>
+        <div style="padding:0 16px 16px;">
+          <button onclick="exportarPDF()" style="
+            width:100%;padding:13px;border-radius:50px;
+            background:linear-gradient(135deg,var(--cacao),#7A4A2C);
+            color:#fff;font-size:15px;font-weight:800;
+            box-shadow:0 4px 14px rgba(62,35,16,.35);
+            display:flex;align-items:center;justify-content:center;gap:8px;
+            transition:transform .15s;
+          " onactive="this.style.transform='scale(.97)'">
+            📄 Exportar historial como PDF
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -2243,6 +2256,175 @@ function guardarMedicion(){
   if(m.cintura) document.getElementById('stat-cintura').textContent = m.cintura;
 
   navigate('screen-seguimiento','back');
+}
+
+// ═══════════════════════════════════════════
+//  EXPORTAR PDF
+// ═══════════════════════════════════════════
+function exportarPDF(){
+  if(!mediciones.length){
+    showToast('No hay mediciones para exportar');
+    return;
+  }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+
+  const OLIVE  = [139, 155, 44];
+  const CACAO  = [62,  35,  16];
+  const WHITE  = [255, 255, 255];
+  const CREAM  = [245, 240, 232];
+  const GRAY   = [100, 100, 100];
+  const TEXT   = [44,  44,  44];
+
+  const pw = 210; // page width mm
+  let y = 0;
+
+  // ── Header ──────────────────────────────
+  doc.setFillColor(...OLIVE);
+  doc.rect(0, 0, pw, 38, 'F');
+
+  doc.setTextColor(...WHITE);
+  doc.setFontSize(22);
+  doc.setFont('helvetica','bold');
+  doc.text('DMM App', 14, 16);
+
+  doc.setFontSize(11);
+  doc.setFont('helvetica','normal');
+  doc.text('Dieta Mediterránea Mexicanizada & Cacao Mx', 14, 24);
+  doc.text('Seguimiento Cardiometabólico — Historial de Mediciones', 14, 31);
+
+  // Date & patient
+  const fecha = new Date().toLocaleDateString('es-MX',{day:'2-digit',month:'long',year:'numeric'});
+  doc.setFontSize(9);
+  doc.text(`Generado: ${fecha}`, pw - 14, 16, {align:'right'});
+  if(user && user.nombre){
+    doc.text(`Paciente: ${user.nombre}`, pw - 14, 23, {align:'right'});
+    if(user.sexo) doc.text(`Sexo: ${user.sexo}`, pw - 14, 29, {align:'right'});
+  }
+
+  y = 44;
+
+  // ── Resumen último registro ─────────────
+  const last = mediciones[mediciones.length - 1];
+  doc.setFillColor(...CREAM);
+  doc.roundedRect(10, y, pw - 20, 38, 3, 3, 'F');
+  doc.setDrawColor(...OLIVE);
+  doc.setLineWidth(0.5);
+  doc.roundedRect(10, y, pw - 20, 38, 3, 3, 'S');
+
+  doc.setTextColor(...CACAO);
+  doc.setFontSize(10);
+  doc.setFont('helvetica','bold');
+  doc.text('Última medición: ' + last.fecha, 16, y + 8);
+
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(9);
+  doc.setTextColor(...TEXT);
+
+  const sumCols = [
+    last.peso    ? `Peso: ${last.peso} kg`            : null,
+    last.imc     ? `IMC: ${last.imc.toFixed(1)}`      : null,
+    last.cintura ? `Cintura: ${last.cintura} cm`      : null,
+    (last.tas && last.tad) ? `TA: ${last.tas}/${last.tad} mmHg` : null,
+    last.pulso   ? `Pulso: ${last.pulso} lpm`         : null,
+    last.grasa   ? `% Grasa: ${last.grasa}%`          : null,
+    last.musculo ? `Músculo: ${last.musculo} kg`      : null,
+    last.gvisceral ? `G.Visceral: niv.${last.gvisceral}` : null,
+  ].filter(Boolean);
+
+  let cx = 16, colY = y + 15;
+  sumCols.forEach((txt, i) => {
+    doc.text('• ' + txt, cx, colY);
+    colY += 7;
+    if(colY > y + 36){ cx += 60; colY = y + 15; }
+  });
+
+  y += 44;
+
+  // ── Tabla de historial ──────────────────
+  doc.setTextColor(...OLIVE);
+  doc.setFontSize(12);
+  doc.setFont('helvetica','bold');
+  doc.text('Historial completo', 14, y + 6);
+  y += 12;
+
+  // Table header
+  const cols = ['Fecha','Peso\n(kg)','IMC','Cintura\n(cm)','TA\n(mmHg)','Pulso\n(lpm)','Grasa\n(%)','Músculo\n(kg)'];
+  const colW = [28, 18, 16, 20, 22, 16, 16, 18];
+  const rowH = 8;
+
+  doc.setFillColor(...OLIVE);
+  doc.rect(10, y, pw - 20, rowH, 'F');
+  doc.setTextColor(...WHITE);
+  doc.setFontSize(7.5);
+  doc.setFont('helvetica','bold');
+
+  let xOff = 10;
+  cols.forEach((col, i) => {
+    doc.text(col.replace('\n',' '), xOff + 2, y + 5.5);
+    xOff += colW[i];
+  });
+  y += rowH;
+
+  // Table rows
+  const sorted = mediciones.slice().reverse();
+  sorted.forEach((m, idx) => {
+    if(y > 270){ // new page
+      doc.addPage();
+      y = 20;
+    }
+
+    const bg = idx % 2 === 0 ? WHITE : CREAM;
+    doc.setFillColor(...bg);
+    doc.rect(10, y, pw - 20, rowH, 'F');
+
+    doc.setTextColor(...TEXT);
+    doc.setFontSize(7.5);
+    doc.setFont('helvetica','normal');
+
+    const vals = [
+      m.fecha||'—',
+      m.peso   != null ? String(m.peso)           : '—',
+      m.imc    != null ? m.imc.toFixed(1)          : '—',
+      m.cintura!= null ? String(m.cintura)         : '—',
+      (m.tas && m.tad) ? `${m.tas}/${m.tad}`      : '—',
+      m.pulso  != null ? String(m.pulso)           : '—',
+      m.grasa  != null ? `${m.grasa}%`             : '—',
+      m.musculo!= null ? String(m.musculo)         : '—',
+    ];
+
+    xOff = 10;
+    vals.forEach((v, i) => {
+      doc.text(v, xOff + 2, y + 5.5);
+      xOff += colW[i];
+    });
+
+    // Row border bottom
+    doc.setDrawColor(220, 220, 210);
+    doc.setLineWidth(0.2);
+    doc.line(10, y + rowH, pw - 10, y + rowH);
+
+    y += rowH;
+  });
+
+  // ── Notas / pie de página ───────────────
+  y += 8;
+  if(y < 260){
+    doc.setFillColor(...CACAO);
+    doc.rect(0, 278, pw, 19, 'F');
+    doc.setTextColor(...WHITE);
+    doc.setFontSize(8);
+    doc.setFont('helvetica','bold');
+    doc.text('DMM App — Universidad Olmeca · Villahermosa, Tabasco', pw/2, 285, {align:'center'});
+    doc.setFont('helvetica','normal');
+    doc.text('Dr. Ángel Ernesto Sierra Ovando · Datos almacenados localmente · LFPDPPP', pw/2, 291, {align:'center'});
+  }
+
+  // ── Guardar ─────────────────────────────
+  const fname = `DMM_historial_${new Date().toISOString().slice(0,10)}.pdf`;
+  doc.save(fname);
+  showToast('📄 PDF generado: ' + fname);
 }
 
 // ═══════════════════════════════════════════
