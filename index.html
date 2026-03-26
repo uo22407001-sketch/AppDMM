@@ -219,14 +219,22 @@ window.saveProfileFirebase = async function(){
 
   /* ===== SCREENS ===== */
   .screen{
-    position:absolute;inset:0;
+    position:absolute;
+    top:0;left:0;right:0;
+    /* bottom deja espacio al nav fijo */
+    bottom:var(--nav-h);
     display:flex;flex-direction:column;
     overflow-y:auto;overflow-x:hidden;
+    /* Evita que el scroll vertical de la pantalla se propague al nav */
+    overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch;
     transition:transform .35s cubic-bezier(.4,0,.2,1), opacity .35s;
     background:var(--cream);
     scrollbar-width:none;
   }
   .screen::-webkit-scrollbar{display:none;}
+  /* Login y Register no tienen nav — ocupan pantalla completa */
+  #screen-login, #screen-register{bottom:0;}
   .screen.hidden{transform:translateX(100%);opacity:0;pointer-events:none;}
   .screen.slide-left{transform:translateX(-100%);opacity:0;pointer-events:none;}
 
@@ -256,29 +264,30 @@ window.saveProfileFirebase = async function(){
     background:var(--white);
     border-top:1px solid rgba(0,0,0,.08);
     display:flex;align-items:stretch;
-    flex-shrink:0;
-    position:relative;z-index:200;
-    overflow-x:auto;overflow-y:hidden;
-    scrollbar-width:none;
-    -webkit-overflow-scrolling:touch;
-    scroll-snap-type:x mandatory;
+    position:fixed;
+    bottom:0;left:50%;
+    transform:translateX(-50%);
+    width:100%;max-width:412px;
+    z-index:9999;
+    overflow:visible;
   }
-  .bottom-nav::-webkit-scrollbar{display:none;}
   .nav-item{
-    flex:0 0 72px;min-width:72px;
+    flex:1;
     display:flex;flex-direction:column;align-items:center;justify-content:center;
-    gap:3px;padding:6px 4px;
-    color:var(--gray-mid);font-size:10px;font-weight:700;
+    gap:3px;padding:6px 2px;
+    color:var(--gray-mid);font-size:9.5px;font-weight:700;
     transition:color .2s;
     position:relative;
-    scroll-snap-align:start;
+    touch-action:manipulation;
+    -webkit-tap-highlight-color:transparent;
   }
   .nav-item.active{color:var(--olive);}
   .nav-item.active::after{
-    content:'';position:absolute;top:0;left:20%;right:20%;
+    content:'';position:absolute;top:0;left:15%;right:15%;
     height:2px;background:var(--olive);border-radius:0 0 4px 4px;
   }
-  .nav-icon{font-size:22px;line-height:1;}
+  .nav-icon{font-size:20px;line-height:1;}
+  .screen-body{padding-bottom:calc(var(--nav-h) + 20px);}
 
   /* ===== HERO / LOGIN SCREEN ===== */
   #screen-login{background:var(--olive);}
@@ -1702,25 +1711,17 @@ window.saveProfileFirebase = async function(){
       <div class="nav-icon">🥗</div>
       <div>DMM</div>
     </div>
-    <div class="nav-item" id="nav-cacao" onclick="navigate('screen-cacao');setActiveNav('nav-cacao')">
-      <div class="nav-icon">🍫</div>
-      <div>Cacao</div>
-    </div>
     <div class="nav-item" id="nav-menus" onclick="navigate('screen-menus');setActiveNav('nav-menus')">
-      <div class="nav-icon">🍽️</div>
+      <div class="nav-icon">🍽️🌱</div>
       <div>Menús</div>
     </div>
     <div class="nav-item" id="nav-seg" onclick="navigate('screen-seguimiento');setActiveNav('nav-seg')">
       <div class="nav-icon">📊</div>
       <div>Salud</div>
     </div>
-    <div class="nav-item" id="nav-temp" onclick="navigate('screen-temporada');setActiveNav('nav-temp')">
-      <div class="nav-icon">🌱</div>
-      <div>Temporada</div>
-    </div>
-    <div class="nav-item" id="nav-recursos" onclick="navigate('screen-recursos');setActiveNav('nav-recursos')">
-      <div class="nav-icon">📚</div>
-      <div>Recursos</div>
+    <div class="nav-item" id="nav-cacao" onclick="navigate('screen-cacao');setActiveNav('nav-cacao')">
+      <div class="nav-icon">🍫📚</div>
+      <div>Cacao & Info</div>
     </div>
     <div class="nav-item" id="nav-perfil" onclick="navigate('screen-perfil');setActiveNav('nav-perfil')">
       <div class="nav-icon">👤</div>
@@ -2060,17 +2061,20 @@ function saveState(){
 // ═══════════════════════════════════════════
 //  NAVIGATION
 // ═══════════════════════════════════════════
-const NAV_SCREENS = ['screen-home','screen-info','screen-cacao','screen-menus','screen-seguimiento','screen-temporada','screen-recursos','screen-perfil'];
-const NAV_IDS    = ['nav-home','nav-dmm','nav-cacao','nav-menus','nav-seg','nav-temp','nav-recursos','nav-perfil'];
+// Screens que aparecen en el nav (6 ítems)
+const NAV_SCREENS = ['screen-home','screen-info','screen-menus','screen-seguimiento','screen-cacao','screen-perfil'];
+const NAV_IDS     = ['nav-home','nav-dmm','nav-menus','nav-seg','nav-cacao','nav-perfil'];
+// Mapeo de screens secundarias a su ítem de nav padre
+const NAV_ALIAS   = {
+  'screen-temporada': 'nav-menus',   // Temporada → ícono Menús
+  'screen-recursos':  'nav-cacao',   // Recursos  → ícono Cacao & Info
+};
 
 function setActiveNav(activeId){
   NAV_IDS.forEach(id=>{
     const el = document.getElementById(id);
     if(el) el.classList.toggle('active', id===activeId);
   });
-  // Auto-scroll nav so active item is visible
-  const activeEl = document.getElementById(activeId);
-  if(activeEl) activeEl.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
 }
 
 function navigate(screenId, dir='forward'){
@@ -2089,13 +2093,16 @@ function navigate(screenId, dir='forward'){
 
   currentScreen = screenId;
 
-  // Show/hide bottom nav
-  const showNav = NAV_SCREENS.includes(screenId);
+  // Mostrar nav en screens principales Y secundarias con alias
+  const isMain  = NAV_SCREENS.includes(screenId);
+  const isAlias = Object.keys(NAV_ALIAS).includes(screenId);
+  const showNav = isMain || isAlias;
   document.getElementById('bottom-nav').style.display = showNav ? 'flex' : 'none';
 
-  // Highlight nav
+  // Resaltar ítem correcto (directo o por alias)
   if(showNav){
-    const navId = NAV_IDS[NAV_SCREENS.indexOf(screenId)];
+    let navId = NAV_ALIAS[screenId];          // pantalla secundaria → alias
+    if(!navId) navId = NAV_IDS[NAV_SCREENS.indexOf(screenId)]; // pantalla principal
     if(navId) setActiveNav(navId);
   }
 
