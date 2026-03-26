@@ -384,7 +384,7 @@ window.saveProfileFirebase = async function(){
   #screen-home{background:var(--cream);}
   .home-header{
     background:var(--olive);
-    padding:20px 20px 36px;
+    padding:28px 20px 52px;
     position:relative;overflow:hidden;
   }
   .home-header-blob{
@@ -407,7 +407,7 @@ window.saveProfileFirebase = async function(){
   .home-cards-row{
     display:flex;gap:12px;
     padding:0 16px;
-    margin-top:-22px;
+    margin-top:-28px;
     position:relative;z-index:5;
   }
   .stat-card{
@@ -1086,7 +1086,7 @@ window.saveProfileFirebase = async function(){
         <div class="daily-tip-text" id="daily-tip-text">Inicia tu día con el Licuado DMM: cacao tabasqueño + chaya + avena + miel de abeja.</div>
       </div>
     </div>
-    <div style="height:16px"></div>
+    <div style="height:calc(var(--nav-h) + 16px)"></div>
   </div>
 
   <!-- ════════════════════════════════════════
@@ -1653,7 +1653,7 @@ window.saveProfileFirebase = async function(){
       <div class="login-blob1"></div>
       <div class="profile-avatar-big" id="perfil-avatar">U</div>
       <div class="profile-name" id="perfil-name">Usuario DMM</div>
-      <div class="profile-email" id="perfil-email">usuario@ejemplo.com</div>
+      <div class="profile-email" id="perfil-email"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="1e6b6d6b7f6c77715e7b747b736e7271307d7173">[email&#160;protected]</a></div>
     </div>
     <div class="profile-menu">
       <div class="profile-item" onclick="navigate('screen-registro')">
@@ -1707,7 +1707,7 @@ window.saveProfileFirebase = async function(){
       <div class="nav-icon">🏠</div>
       <div>Inicio</div>
     </div>
-    <div class="nav-item" id="nav-dmm" onclick="navigate('screen-info');setActiveNav('nav-dmm')">
+    <div class="nav-item" id="nav-dmm" onclick="navigate('screen-info-dmm');setActiveNav('nav-dmm')">
       <div class="nav-icon">🥗</div>
       <div>DMM</div>
     </div>
@@ -1762,7 +1762,7 @@ window.saveProfileFirebase = async function(){
 
 </div><!-- #app -->
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // ═══════════════════════════════════════════
 //  DATA
 // ═══════════════════════════════════════════
@@ -2714,10 +2714,4 @@ function openMenu(){ showToast('Menú de opciones'); }
 
 // ═══════════════════════════════════════════
 //  INIT
-// ═══════════════════════════════════════════
-// Firebase onAuthStateChanged maneja la navegación inicial.
-// loadState solo recupera caché local de mediciones.
-loadState();
-</script>
-</body>
-</html>
+// ══════════════════�
