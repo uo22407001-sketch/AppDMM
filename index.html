@@ -85,13 +85,20 @@
     display:flex;align-items:stretch;
     flex-shrink:0;
     position:relative;z-index:200;
+    overflow-x:auto;overflow-y:hidden;
+    scrollbar-width:none;
+    -webkit-overflow-scrolling:touch;
+    scroll-snap-type:x mandatory;
   }
+  .bottom-nav::-webkit-scrollbar{display:none;}
   .nav-item{
-    flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    flex:0 0 72px;min-width:72px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
     gap:3px;padding:6px 4px;
     color:var(--gray-mid);font-size:10px;font-weight:700;
     transition:color .2s;
     position:relative;
+    scroll-snap-align:start;
   }
   .nav-item.active{color:var(--olive);}
   .nav-item.active::after{
@@ -1062,6 +1069,13 @@
 
       <div class="section-title fade-up fade-up-5"><span>🥤</span> Receta Licuado DMM</div>
       <div class="recipe-card fade-up fade-up-5">
+        <div style="width:100%;height:180px;border-radius:12px;overflow:hidden;margin-bottom:14px;position:relative;">
+          <img src="https://images.unsplash.com/photo-1638176066666-ffb2f013c7dd?w=600&q=80"
+               alt="Licuado DMM — cacao, chaya y frutas de temporada"
+               style="width:100%;height:100%;object-fit:cover;"
+               onerror="this.parentElement.style.background='linear-gradient(135deg,#3E2310,#8B6347)';this.style.display='none';">
+          <div style="position:absolute;bottom:0;left:0;right:0;padding:8px 12px;background:linear-gradient(transparent,rgba(0,0,0,.55));color:#fff;font-size:12px;font-weight:700;">🥤 Licuado DMM — Desayuno estrella</div>
+        </div>
         <h3>🥤 Licuado DMM — Desayuno estrella</h3>
         <div class="recipe-ingredient"><span class="ri-icon">🍫</span><span class="ri-name">Cacao tabasqueño en polvo</span><span class="ri-qty">2 cdas</span></div>
         <div class="recipe-ingredient"><span class="ri-icon">🌿</span><span class="ri-name">Chaya (o espinaca) fresca</span><span class="ri-qty">1 puño</span></div>
@@ -1081,6 +1095,12 @@
           <h3>Salsa DMM — El "sofrito mexicano"</h3>
         </div>
         <div class="card-body">
+          <div style="width:100%;height:160px;border-radius:10px;overflow:hidden;margin-bottom:12px;">
+            <img src="https://images.unsplash.com/photo-1580822184713-fc5400e7fe10?w=600&q=80"
+                 alt="Salsa DMM — tomate, chile amashito, aguacate y cilantro"
+                 style="width:100%;height:100%;object-fit:cover;"
+                 onerror="this.parentElement.style.background='linear-gradient(135deg,#7A4A2C,#3E2310)';this.style.display='none';">
+          </div>
           <p><strong>Equivalente mexicano del sofrito mediterráneo.</strong> Combina tomate, cebolla, chile amashito, cilantro y aguacate. Mantiene los mismos efectos antiinflamatorios y antitrombóticos documentados por Hurtado-Barroso & Martinez-Huelamo (2019).</p>
           <p>Acompaña el pescado del día o cualquier proteína principal. Se puede preparar fresca en 5 minutos.</p>
         </div>
@@ -1484,23 +1504,35 @@
        BOTTOM NAV
   ════════════════════════════════════════ -->
   <nav class="bottom-nav" id="bottom-nav" style="display:none;">
-    <div class="nav-item active" id="nav-home" onclick="navigate('screen-home')">
+    <div class="nav-item active" id="nav-home" onclick="navigate('screen-home');setActiveNav('nav-home')">
       <div class="nav-icon">🏠</div>
       <div>Inicio</div>
     </div>
-    <div class="nav-item" id="nav-menus" onclick="navigate('screen-menus')">
+    <div class="nav-item" id="nav-dmm" onclick="navigate('screen-info');setActiveNav('nav-dmm')">
+      <div class="nav-icon">🥗</div>
+      <div>DMM</div>
+    </div>
+    <div class="nav-item" id="nav-cacao" onclick="navigate('screen-cacao');setActiveNav('nav-cacao')">
+      <div class="nav-icon">🍫</div>
+      <div>Cacao</div>
+    </div>
+    <div class="nav-item" id="nav-menus" onclick="navigate('screen-menus');setActiveNav('nav-menus')">
       <div class="nav-icon">🍽️</div>
       <div>Menús</div>
     </div>
-    <div class="nav-item" id="nav-seg" onclick="navigate('screen-seguimiento')">
+    <div class="nav-item" id="nav-seg" onclick="navigate('screen-seguimiento');setActiveNav('nav-seg')">
       <div class="nav-icon">📊</div>
       <div>Salud</div>
     </div>
-    <div class="nav-item" id="nav-temp" onclick="navigate('screen-temporada')">
+    <div class="nav-item" id="nav-temp" onclick="navigate('screen-temporada');setActiveNav('nav-temp')">
       <div class="nav-icon">🌱</div>
       <div>Temporada</div>
     </div>
-    <div class="nav-item" id="nav-perfil" onclick="navigate('screen-perfil')">
+    <div class="nav-item" id="nav-recursos" onclick="navigate('screen-recursos');setActiveNav('nav-recursos')">
+      <div class="nav-icon">📚</div>
+      <div>Recursos</div>
+    </div>
+    <div class="nav-item" id="nav-perfil" onclick="navigate('screen-perfil');setActiveNav('nav-perfil')">
       <div class="nav-icon">👤</div>
       <div>Perfil</div>
     </div>
@@ -1840,8 +1872,18 @@ function saveState(){
 // ═══════════════════════════════════════════
 //  NAVIGATION
 // ═══════════════════════════════════════════
-const NAV_SCREENS = ['screen-home','screen-menus','screen-seguimiento','screen-temporada','screen-perfil'];
-const NAV_IDS = ['nav-home','nav-menus','nav-seg','nav-temp','nav-perfil'];
+const NAV_SCREENS = ['screen-home','screen-info','screen-cacao','screen-menus','screen-seguimiento','screen-temporada','screen-recursos','screen-perfil'];
+const NAV_IDS    = ['nav-home','nav-dmm','nav-cacao','nav-menus','nav-seg','nav-temp','nav-recursos','nav-perfil'];
+
+function setActiveNav(activeId){
+  NAV_IDS.forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.classList.toggle('active', id===activeId);
+  });
+  // Auto-scroll nav so active item is visible
+  const activeEl = document.getElementById(activeId);
+  if(activeEl) activeEl.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+}
 
 function navigate(screenId, dir='forward'){
   const cur = document.getElementById(currentScreen);
@@ -1865,9 +1907,8 @@ function navigate(screenId, dir='forward'){
 
   // Highlight nav
   if(showNav){
-    NAV_IDS.forEach((id,i)=>{
-      document.getElementById(id).classList.toggle('active', NAV_SCREENS[i]===screenId);
-    });
+    const navId = NAV_IDS[NAV_SCREENS.indexOf(screenId)];
+    if(navId) setActiveNav(navId);
   }
 
   // Screen-specific init
