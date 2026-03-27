@@ -384,7 +384,8 @@ window.saveProfileFirebase = async function(){
   #screen-home{background:var(--cream);}
   .home-header{
     background:var(--olive);
-    padding:20px 20px 36px;
+    /* FIX 1: aumentar padding vertical para que no se encimen las stat-cards con el nombre */
+    padding:24px 20px 52px;
     position:relative;overflow:hidden;
   }
   .home-header-blob{
@@ -444,6 +445,7 @@ window.saveProfileFirebase = async function(){
   .module-card-body{padding:10px 12px 12px;}
   .module-card-title{font-size:13px;font-weight:800;color:var(--text);line-height:1.3;}
   .module-card-sub{font-size:11px;color:var(--gray-mid);margin-top:2px;}
+  /* FIX 2: margen inferior generoso para que el consejo del día sea visible antes del nav */
   .daily-tip{
     margin:0 16px 16px;
     background:linear-gradient(135deg,var(--olive),var(--olive-dark));
@@ -1079,14 +1081,14 @@ window.saveProfileFirebase = async function(){
         </div>
       </div>
     </div>
-    <div class="daily-tip fade-up fade-up-5" onclick="navigate('screen-cacao')">
+    <!-- FIX 2: padding-bottom aumentado para que el consejo quede visible sobre el nav -->
+    <div class="daily-tip fade-up fade-up-5" style="margin-bottom:calc(var(--nav-h) + 20px);" onclick="navigate('screen-cacao')">
       <div class="daily-tip-icon">💡</div>
       <div>
         <div class="daily-tip-label">Consejo del día</div>
         <div class="daily-tip-text" id="daily-tip-text">Inicia tu día con el Licuado DMM: cacao tabasqueño + chaya + avena + miel de abeja.</div>
       </div>
     </div>
-    <div style="height:16px"></div>
   </div>
 
   <!-- ════════════════════════════════════════
@@ -1707,7 +1709,8 @@ window.saveProfileFirebase = async function(){
       <div class="nav-icon">🏠</div>
       <div>Inicio</div>
     </div>
-    <div class="nav-item" id="nav-dmm" onclick="navigate('screen-info');setActiveNav('nav-dmm')">
+    <!-- FIX 3: corregido screen-info → screen-info-dmm para que el botón DMM funcione -->
+    <div class="nav-item" id="nav-dmm" onclick="navigate('screen-info-dmm');setActiveNav('nav-dmm')">
       <div class="nav-icon">🥗</div>
       <div>DMM</div>
     </div>
@@ -2046,28 +2049,23 @@ let currentMenuTab = 'estacion';
 let currentMonth = new Date().getMonth() + 1;
 
 function loadState(){
-  // Firebase onAuthStateChanged maneja la sesión automáticamente.
-  // localStorage solo se usa como caché offline de emergencia.
   try{
     const m = localStorage.getItem('dmm_mediciones_cache');
     if(m && !mediciones.length) mediciones = JSON.parse(m);
   }catch(e){}
 }
 function saveState(){
-  // Caché local de mediciones para uso offline
   try{ localStorage.setItem('dmm_mediciones_cache', JSON.stringify(mediciones)); }catch(e){}
 }
 
 // ═══════════════════════════════════════════
 //  NAVIGATION
 // ═══════════════════════════════════════════
-// Screens que aparecen en el nav (6 ítems)
-const NAV_SCREENS = ['screen-home','screen-info','screen-menus','screen-seguimiento','screen-cacao','screen-perfil'];
+const NAV_SCREENS = ['screen-home','screen-info-dmm','screen-menus','screen-seguimiento','screen-cacao','screen-perfil'];
 const NAV_IDS     = ['nav-home','nav-dmm','nav-menus','nav-seg','nav-cacao','nav-perfil'];
-// Mapeo de screens secundarias a su ítem de nav padre
 const NAV_ALIAS   = {
-  'screen-temporada': 'nav-menus',   // Temporada → ícono Menús
-  'screen-recursos':  'nav-cacao',   // Recursos  → ícono Cacao & Info
+  'screen-temporada': 'nav-menus',
+  'screen-recursos':  'nav-cacao',
 };
 
 function setActiveNav(activeId){
@@ -2093,20 +2091,17 @@ function navigate(screenId, dir='forward'){
 
   currentScreen = screenId;
 
-  // Mostrar nav en screens principales Y secundarias con alias
   const isMain  = NAV_SCREENS.includes(screenId);
   const isAlias = Object.keys(NAV_ALIAS).includes(screenId);
   const showNav = isMain || isAlias;
   document.getElementById('bottom-nav').style.display = showNav ? 'flex' : 'none';
 
-  // Resaltar ítem correcto (directo o por alias)
   if(showNav){
-    let navId = NAV_ALIAS[screenId];          // pantalla secundaria → alias
-    if(!navId) navId = NAV_IDS[NAV_SCREENS.indexOf(screenId)]; // pantalla principal
+    let navId = NAV_ALIAS[screenId];
+    if(!navId) navId = NAV_IDS[NAV_SCREENS.indexOf(screenId)];
     if(navId) setActiveNav(navId);
   }
 
-  // Screen-specific init
   if(screenId==='screen-home') initHome();
   if(screenId==='screen-seguimiento') initSeguimiento();
   if(screenId==='screen-temporada') initTemporada();
@@ -2123,10 +2118,6 @@ function goBack(){
 
 // ═══════════════════════════════════════════
 //  AUTH
-// ═══════════════════════════════════════════
-// ═══════════════════════════════════════════
-//  AUTH — implementadas en el módulo Firebase (ver <script type="module">)
-//  Estas funciones son placeholders por si el módulo tarda en cargar.
 // ═══════════════════════════════════════════
 function doLogin(){    window.showToast('⏳ Inicializando Firebase...'); }
 function doRegister(){ window.showToast('⏳ Inicializando Firebase...'); }
@@ -2151,9 +2142,7 @@ function updateUserUI(){
 // ═══════════════════════════════════════════
 function initHome(){
   updateUserUI();
-  // Random tip
   document.getElementById('daily-tip-text').textContent = TIPS[Math.floor(Math.random()*TIPS.length)];
-  // Stats from last medicion
   if(mediciones.length > 0){
     const last = mediciones[mediciones.length-1];
     document.getElementById('stat-imc').textContent = last.imc ? last.imc.toFixed(1) : '—';
@@ -2263,7 +2252,6 @@ function initSeguimiento(){
     return;
   }
   const last = mediciones[mediciones.length-1];
-  // Fill metrics
   document.getElementById('m-peso').textContent = last.peso || '—';
   document.getElementById('m-talla').textContent = last.talla || '—';
   document.getElementById('m-cintura').textContent = last.cintura || '—';
@@ -2296,9 +2284,7 @@ function initSeguimiento(){
                   {cls:'status-bad',label:'🔴 Hipertensión'};
     document.getElementById('m-ta-status').innerHTML = `<span class="${taSt.cls}">${taSt.label}</span>`;
   }
-  // Chart
   renderImcChart();
-  // Historial
   renderHistorial();
 }
 
@@ -2393,11 +2379,9 @@ function guardarMedicion(){
 
   mediciones.push(m);
   saveState();
-  // Sincronizar con Firebase si está disponible
   if(window.guardarMedicionFirebase) window.guardarMedicionFirebase(m);
   else showToast('✅ Medición guardada correctamente');
 
-  // Reset
   ['r-peso','r-talla','r-cintura','r-cadera','r-tas','r-tad','r-pulso','r-dino','r-grasa','r-musculo','r-osea','r-gvisceral','r-edadmeta','r-notas'].forEach(id=>{
     const el = document.getElementById(id);
     if(el) el.value='';
@@ -2405,7 +2389,6 @@ function guardarMedicion(){
   document.getElementById('live-imc').textContent='—';
   document.getElementById('live-ict').textContent='—';
 
-  // Update stat cards
   document.getElementById('stat-imc').textContent = imc ? imc.toFixed(1) : '—';
   if(m.tas && m.tad) document.getElementById('stat-ta').textContent = m.tas+'/'+m.tad;
   if(m.cintura) document.getElementById('stat-cintura').textContent = m.cintura;
@@ -2432,10 +2415,9 @@ function exportarPDF(){
   const GRAY   = [100, 100, 100];
   const TEXT   = [44,  44,  44];
 
-  const pw = 210; // page width mm
+  const pw = 210;
   let y = 0;
 
-  // ── Header ──────────────────────────────
   doc.setFillColor(...OLIVE);
   doc.rect(0, 0, pw, 38, 'F');
 
@@ -2449,7 +2431,6 @@ function exportarPDF(){
   doc.text('Dieta Mediterránea Mexicanizada & Cacao Mx', 14, 24);
   doc.text('Seguimiento Cardiometabólico — Historial de Mediciones', 14, 31);
 
-  // Date & patient
   const fecha = new Date().toLocaleDateString('es-MX',{day:'2-digit',month:'long',year:'numeric'});
   doc.setFontSize(9);
   doc.text(`Generado: ${fecha}`, pw - 14, 16, {align:'right'});
@@ -2460,7 +2441,6 @@ function exportarPDF(){
 
   y = 44;
 
-  // ── Resumen último registro ─────────────
   const last = mediciones[mediciones.length - 1];
   doc.setFillColor(...CREAM);
   doc.roundedRect(10, y, pw - 20, 38, 3, 3, 'F');
@@ -2497,14 +2477,12 @@ function exportarPDF(){
 
   y += 44;
 
-  // ── Tabla de historial ──────────────────
   doc.setTextColor(...OLIVE);
   doc.setFontSize(12);
   doc.setFont('helvetica','bold');
   doc.text('Historial completo', 14, y + 6);
   y += 12;
 
-  // Table header
   const cols = ['Fecha','Peso\n(kg)','IMC','Cintura\n(cm)','TA\n(mmHg)','Pulso\n(lpm)','Grasa\n(%)','Músculo\n(kg)'];
   const colW = [28, 18, 16, 20, 22, 16, 16, 18];
   const rowH = 8;
@@ -2522,10 +2500,9 @@ function exportarPDF(){
   });
   y += rowH;
 
-  // Table rows
   const sorted = mediciones.slice().reverse();
   sorted.forEach((m, idx) => {
-    if(y > 270){ // new page
+    if(y > 270){
       doc.addPage();
       y = 20;
     }
@@ -2555,7 +2532,6 @@ function exportarPDF(){
       xOff += colW[i];
     });
 
-    // Row border bottom
     doc.setDrawColor(220, 220, 210);
     doc.setLineWidth(0.2);
     doc.line(10, y + rowH, pw - 10, y + rowH);
@@ -2563,7 +2539,6 @@ function exportarPDF(){
     y += rowH;
   });
 
-  // ── Notas / pie de página ───────────────
   y += 8;
   if(y < 260){
     doc.setFillColor(...CACAO);
@@ -2576,7 +2551,6 @@ function exportarPDF(){
     doc.text('Dr. Ángel Ernesto Sierra Ovando · Datos almacenados localmente · LFPDPPP', pw/2, 291, {align:'center'});
   }
 
-  // ── Guardar ─────────────────────────────
   const fname = `DMM_historial_${new Date().toISOString().slice(0,10)}.pdf`;
   doc.save(fname);
   showToast('📄 PDF generado: ' + fname);
@@ -2678,7 +2652,6 @@ function openModalEditProfile(){
 
 function saveProfile(){
   if(window.saveProfileFirebase){ window.saveProfileFirebase(); return; }
-  // Fallback sin Firebase
   if(!user) user={};
   user.name = document.getElementById('edit-name').value.trim() || user.name;
   user.email = document.getElementById('edit-email').value.trim() || user.email;
@@ -2715,8 +2688,6 @@ function openMenu(){ showToast('Menú de opciones'); }
 // ═══════════════════════════════════════════
 //  INIT
 // ═══════════════════════════════════════════
-// Firebase onAuthStateChanged maneja la navegación inicial.
-// loadState solo recupera caché local de mediciones.
 loadState();
 </script>
 </body>
