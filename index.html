@@ -181,14 +181,14 @@ window.saveProfileFirebase = async function(){
 <style>
   /* ===== VARIABLES ===== */
   :root {
-    --olive:       #8B9B2C;
-    --olive-dark:  #6B7A1E;
-    --olive-light: #A8B84B;
-    --olive-pale:  #C8D66A;
+    --olive:       #1B3A6B;
+    --olive-dark:  #122852;
+    --olive-light: #2E5FA3;
+    --olive-pale:  #7DA4D4;
     --cream:       #F5F0E8;
-    --brown:       #5C3D2E;
-    --brown-light: #8B6347;
-    --cacao:       #3E2310;
+    --brown:       #1E3A5F;
+    --brown-light: #3D6B99;
+    --cacao:       #0D1F3C;
     --white:       #FFFFFF;
     --gray:        #F0EDE6;
     --gray-mid:    #B0A89A;
@@ -384,8 +384,7 @@ window.saveProfileFirebase = async function(){
   #screen-home{background:var(--cream);}
   .home-header{
     background:var(--olive);
-    /* FIX 1: aumentar padding vertical para que no se encimen las stat-cards con el nombre */
-    padding:24px 20px 52px;
+    padding:20px 20px 36px;
     position:relative;overflow:hidden;
   }
   .home-header-blob{
@@ -438,14 +437,13 @@ window.saveProfileFirebase = async function(){
   }
   .mc-olive{background:linear-gradient(135deg,var(--olive),var(--olive-light));}
   .mc-brown{background:linear-gradient(135deg,var(--brown),var(--brown-light));}
-  .mc-cacao{background:linear-gradient(135deg,var(--cacao),#7A4A2C);}
+  .mc-cacao{background:linear-gradient(135deg,var(--cacao),#1A3A6E);}
   .mc-teal{background:linear-gradient(135deg,#2C8B6B,#4DB896);}
   .mc-blue{background:linear-gradient(135deg,#2C5F8B,#4A8BB8);}
   .mc-purple{background:linear-gradient(135deg,#6B2C8B,#9B4DB8);}
   .module-card-body{padding:10px 12px 12px;}
   .module-card-title{font-size:13px;font-weight:800;color:var(--text);line-height:1.3;}
   .module-card-sub{font-size:11px;color:var(--gray-mid);margin-top:2px;}
-  /* FIX 2: margen inferior generoso para que el consejo del día sea visible antes del nav */
   .daily-tip{
     margin:0 16px 16px;
     background:linear-gradient(135deg,var(--olive),var(--olive-dark));
@@ -540,7 +538,7 @@ window.saveProfileFirebase = async function(){
 
   /* ===== CACAO SCREEN ===== */
   .cacao-hero{
-    background:linear-gradient(160deg,var(--cacao),#5C2E10);
+    background:linear-gradient(160deg,var(--cacao),#0A1929);
     padding:70px 20px 40px;position:relative;overflow:hidden;
   }
   .cacao-hero-blob{
@@ -559,14 +557,14 @@ window.saveProfileFirebase = async function(){
   }
   .benefit-icon-wrap{
     width:44px;height:44px;border-radius:12px;
-    background:linear-gradient(135deg,var(--cacao),#7A4A2C);
+    background:linear-gradient(135deg,var(--cacao),#1A3A6E);
     display:flex;align-items:center;justify-content:center;
     font-size:22px;flex-shrink:0;
   }
   .benefit-title{font-size:14px;font-weight:800;color:var(--text);margin-bottom:4px;}
   .benefit-text{font-size:12px;color:#666;line-height:1.5;}
   .recipe-card{
-    background:linear-gradient(135deg,var(--cacao),#7A4A2C);
+    background:linear-gradient(135deg,var(--cacao),#1A3A6E);
     border-radius:var(--radius);padding:20px;margin-bottom:16px;
     box-shadow:var(--shadow);
   }
@@ -807,7 +805,7 @@ window.saveProfileFirebase = async function(){
   .ri-green{background:linear-gradient(135deg,var(--olive),var(--olive-light));}
   .ri-brown{background:linear-gradient(135deg,var(--brown),var(--brown-light));}
   .ri-teal{background:linear-gradient(135deg,#2C8B6B,#4DB896);}
-  .ri-cacao{background:linear-gradient(135deg,var(--cacao),#7A4A2C);}
+  .ri-cacao{background:linear-gradient(135deg,var(--cacao),#1A3A6E);}
   .resource-title{font-size:14px;font-weight:800;color:var(--text);}
   .resource-sub{font-size:12px;color:var(--gray-mid);margin-top:2px;}
   .resource-arrow{margin-left:auto;color:var(--gray-mid);font-size:16px;}
@@ -1081,14 +1079,14 @@ window.saveProfileFirebase = async function(){
         </div>
       </div>
     </div>
-    <!-- FIX 2: padding-bottom aumentado para que el consejo quede visible sobre el nav -->
-    <div class="daily-tip fade-up fade-up-5" style="margin-bottom:calc(var(--nav-h) + 20px);" onclick="navigate('screen-cacao')">
+    <div class="daily-tip fade-up fade-up-5" onclick="navigate('screen-cacao')">
       <div class="daily-tip-icon">💡</div>
       <div>
         <div class="daily-tip-label">Consejo del día</div>
         <div class="daily-tip-text" id="daily-tip-text">Inicia tu día con el Licuado DMM: cacao tabasqueño + chaya + avena + miel de abeja.</div>
       </div>
     </div>
+    <div style="height:16px"></div>
   </div>
 
   <!-- ════════════════════════════════════════
@@ -1216,7 +1214,7 @@ window.saveProfileFirebase = async function(){
     </div>
     <div class="screen-body">
       <div class="card fade-up">
-        <div class="card-header" style="background:linear-gradient(135deg,var(--cacao),#7A4A2C)">
+        <div class="card-header" style="background:linear-gradient(135deg,var(--cacao),#1A3A6E)">
           <div class="card-header-icon">⚠️</div>
           <h3>¡Importante! Cacao vs Chocolate</h3>
         </div>
@@ -1262,7 +1260,7 @@ window.saveProfileFirebase = async function(){
           <img src="https://images.unsplash.com/photo-1638176066666-ffb2f013c7dd?w=600&q=80"
                alt="Licuado DMM — cacao, chaya y frutas de temporada"
                style="width:100%;height:100%;object-fit:cover;"
-               onerror="this.parentElement.style.background='linear-gradient(135deg,#3E2310,#8B6347)';this.style.display='none';">
+               onerror="this.parentElement.style.background='linear-gradient(135deg,#0D1F3C,#3D6B99)';this.style.display='none';">
           <div style="position:absolute;bottom:0;left:0;right:0;padding:8px 12px;background:linear-gradient(transparent,rgba(0,0,0,.55));color:#fff;font-size:12px;font-weight:700;">🥤 Licuado DMM — Desayuno estrella</div>
         </div>
         <h3>🥤 Licuado DMM — Desayuno estrella</h3>
@@ -1279,7 +1277,7 @@ window.saveProfileFirebase = async function(){
       </div>
 
       <div class="card fade-up">
-        <div class="card-header" style="background:linear-gradient(135deg,var(--cacao),#7A4A2C)">
+        <div class="card-header" style="background:linear-gradient(135deg,var(--cacao),#1A3A6E)">
           <div class="card-header-icon">🌮</div>
           <h3>Salsa DMM — El "sofrito mexicano"</h3>
         </div>
@@ -1288,7 +1286,7 @@ window.saveProfileFirebase = async function(){
             <img src="https://images.unsplash.com/photo-1580822184713-fc5400e7fe10?w=600&q=80"
                  alt="Salsa DMM — tomate, chile amashito, aguacate y cilantro"
                  style="width:100%;height:100%;object-fit:cover;"
-                 onerror="this.parentElement.style.background='linear-gradient(135deg,#7A4A2C,#3E2310)';this.style.display='none';">
+                 onerror="this.parentElement.style.background='linear-gradient(135deg,#1A3A6E,#0D1F3C)';this.style.display='none';">
           </div>
           <p><strong>Equivalente mexicano del sofrito mediterráneo.</strong> Combina tomate, cebolla, chile amashito, cilantro y aguacate. Mantiene los mismos efectos antiinflamatorios y antitrombóticos documentados por Hurtado-Barroso & Martinez-Huelamo (2019).</p>
           <p>Acompaña el pescado del día o cualquier proteína principal. Se puede preparar fresca en 5 minutos.</p>
@@ -1296,7 +1294,7 @@ window.saveProfileFirebase = async function(){
       </div>
 
       <div class="card fade-up">
-        <div class="card-header" style="background:linear-gradient(135deg,var(--cacao),#7A4A2C)">
+        <div class="card-header" style="background:linear-gradient(135deg,var(--cacao),#1A3A6E)">
           <div class="card-header-icon">📍</div>
           <h3>Cacao en Tabasco</h3>
         </div>
@@ -1471,7 +1469,7 @@ window.saveProfileFirebase = async function(){
         <div style="padding:0 16px 16px;">
           <button onclick="exportarPDF()" style="
             width:100%;padding:13px;border-radius:50px;
-            background:linear-gradient(135deg,var(--cacao),#7A4A2C);
+            background:linear-gradient(135deg,var(--cacao),#1A3A6E);
             color:#fff;font-size:15px;font-weight:800;
             box-shadow:0 4px 14px rgba(62,35,16,.35);
             display:flex;align-items:center;justify-content:center;gap:8px;
@@ -1709,8 +1707,7 @@ window.saveProfileFirebase = async function(){
       <div class="nav-icon">🏠</div>
       <div>Inicio</div>
     </div>
-    <!-- FIX 3: corregido screen-info → screen-info-dmm para que el botón DMM funcione -->
-    <div class="nav-item" id="nav-dmm" onclick="navigate('screen-info-dmm');setActiveNav('nav-dmm')">
+    <div class="nav-item" id="nav-dmm" onclick="navigate('screen-info');setActiveNav('nav-dmm')">
       <div class="nav-icon">🥗</div>
       <div>DMM</div>
     </div>
@@ -2049,23 +2046,28 @@ let currentMenuTab = 'estacion';
 let currentMonth = new Date().getMonth() + 1;
 
 function loadState(){
+  // Firebase onAuthStateChanged maneja la sesión automáticamente.
+  // localStorage solo se usa como caché offline de emergencia.
   try{
     const m = localStorage.getItem('dmm_mediciones_cache');
     if(m && !mediciones.length) mediciones = JSON.parse(m);
   }catch(e){}
 }
 function saveState(){
+  // Caché local de mediciones para uso offline
   try{ localStorage.setItem('dmm_mediciones_cache', JSON.stringify(mediciones)); }catch(e){}
 }
 
 // ═══════════════════════════════════════════
 //  NAVIGATION
 // ═══════════════════════════════════════════
-const NAV_SCREENS = ['screen-home','screen-info-dmm','screen-menus','screen-seguimiento','screen-cacao','screen-perfil'];
+// Screens que aparecen en el nav (6 ítems)
+const NAV_SCREENS = ['screen-home','screen-info','screen-menus','screen-seguimiento','screen-cacao','screen-perfil'];
 const NAV_IDS     = ['nav-home','nav-dmm','nav-menus','nav-seg','nav-cacao','nav-perfil'];
+// Mapeo de screens secundarias a su ítem de nav padre
 const NAV_ALIAS   = {
-  'screen-temporada': 'nav-menus',
-  'screen-recursos':  'nav-cacao',
+  'screen-temporada': 'nav-menus',   // Temporada → ícono Menús
+  'screen-recursos':  'nav-cacao',   // Recursos  → ícono Cacao & Info
 };
 
 function setActiveNav(activeId){
@@ -2091,17 +2093,20 @@ function navigate(screenId, dir='forward'){
 
   currentScreen = screenId;
 
+  // Mostrar nav en screens principales Y secundarias con alias
   const isMain  = NAV_SCREENS.includes(screenId);
   const isAlias = Object.keys(NAV_ALIAS).includes(screenId);
   const showNav = isMain || isAlias;
   document.getElementById('bottom-nav').style.display = showNav ? 'flex' : 'none';
 
+  // Resaltar ítem correcto (directo o por alias)
   if(showNav){
-    let navId = NAV_ALIAS[screenId];
-    if(!navId) navId = NAV_IDS[NAV_SCREENS.indexOf(screenId)];
+    let navId = NAV_ALIAS[screenId];          // pantalla secundaria → alias
+    if(!navId) navId = NAV_IDS[NAV_SCREENS.indexOf(screenId)]; // pantalla principal
     if(navId) setActiveNav(navId);
   }
 
+  // Screen-specific init
   if(screenId==='screen-home') initHome();
   if(screenId==='screen-seguimiento') initSeguimiento();
   if(screenId==='screen-temporada') initTemporada();
@@ -2118,6 +2123,10 @@ function goBack(){
 
 // ═══════════════════════════════════════════
 //  AUTH
+// ═══════════════════════════════════════════
+// ═══════════════════════════════════════════
+//  AUTH — implementadas en el módulo Firebase (ver <script type="module">)
+//  Estas funciones son placeholders por si el módulo tarda en cargar.
 // ═══════════════════════════════════════════
 function doLogin(){    window.showToast('⏳ Inicializando Firebase...'); }
 function doRegister(){ window.showToast('⏳ Inicializando Firebase...'); }
@@ -2142,7 +2151,9 @@ function updateUserUI(){
 // ═══════════════════════════════════════════
 function initHome(){
   updateUserUI();
+  // Random tip
   document.getElementById('daily-tip-text').textContent = TIPS[Math.floor(Math.random()*TIPS.length)];
+  // Stats from last medicion
   if(mediciones.length > 0){
     const last = mediciones[mediciones.length-1];
     document.getElementById('stat-imc').textContent = last.imc ? last.imc.toFixed(1) : '—';
@@ -2252,6 +2263,7 @@ function initSeguimiento(){
     return;
   }
   const last = mediciones[mediciones.length-1];
+  // Fill metrics
   document.getElementById('m-peso').textContent = last.peso || '—';
   document.getElementById('m-talla').textContent = last.talla || '—';
   document.getElementById('m-cintura').textContent = last.cintura || '—';
@@ -2284,7 +2296,9 @@ function initSeguimiento(){
                   {cls:'status-bad',label:'🔴 Hipertensión'};
     document.getElementById('m-ta-status').innerHTML = `<span class="${taSt.cls}">${taSt.label}</span>`;
   }
+  // Chart
   renderImcChart();
+  // Historial
   renderHistorial();
 }
 
@@ -2379,9 +2393,11 @@ function guardarMedicion(){
 
   mediciones.push(m);
   saveState();
+  // Sincronizar con Firebase si está disponible
   if(window.guardarMedicionFirebase) window.guardarMedicionFirebase(m);
   else showToast('✅ Medición guardada correctamente');
 
+  // Reset
   ['r-peso','r-talla','r-cintura','r-cadera','r-tas','r-tad','r-pulso','r-dino','r-grasa','r-musculo','r-osea','r-gvisceral','r-edadmeta','r-notas'].forEach(id=>{
     const el = document.getElementById(id);
     if(el) el.value='';
@@ -2389,6 +2405,7 @@ function guardarMedicion(){
   document.getElementById('live-imc').textContent='—';
   document.getElementById('live-ict').textContent='—';
 
+  // Update stat cards
   document.getElementById('stat-imc').textContent = imc ? imc.toFixed(1) : '—';
   if(m.tas && m.tad) document.getElementById('stat-ta').textContent = m.tas+'/'+m.tad;
   if(m.cintura) document.getElementById('stat-cintura').textContent = m.cintura;
@@ -2415,9 +2432,10 @@ function exportarPDF(){
   const GRAY   = [100, 100, 100];
   const TEXT   = [44,  44,  44];
 
-  const pw = 210;
+  const pw = 210; // page width mm
   let y = 0;
 
+  // ── Header ──────────────────────────────
   doc.setFillColor(...OLIVE);
   doc.rect(0, 0, pw, 38, 'F');
 
@@ -2431,6 +2449,7 @@ function exportarPDF(){
   doc.text('Dieta Mediterránea Mexicanizada & Cacao Mx', 14, 24);
   doc.text('Seguimiento Cardiometabólico — Historial de Mediciones', 14, 31);
 
+  // Date & patient
   const fecha = new Date().toLocaleDateString('es-MX',{day:'2-digit',month:'long',year:'numeric'});
   doc.setFontSize(9);
   doc.text(`Generado: ${fecha}`, pw - 14, 16, {align:'right'});
@@ -2441,6 +2460,7 @@ function exportarPDF(){
 
   y = 44;
 
+  // ── Resumen último registro ─────────────
   const last = mediciones[mediciones.length - 1];
   doc.setFillColor(...CREAM);
   doc.roundedRect(10, y, pw - 20, 38, 3, 3, 'F');
@@ -2477,12 +2497,14 @@ function exportarPDF(){
 
   y += 44;
 
+  // ── Tabla de historial ──────────────────
   doc.setTextColor(...OLIVE);
   doc.setFontSize(12);
   doc.setFont('helvetica','bold');
   doc.text('Historial completo', 14, y + 6);
   y += 12;
 
+  // Table header
   const cols = ['Fecha','Peso\n(kg)','IMC','Cintura\n(cm)','TA\n(mmHg)','Pulso\n(lpm)','Grasa\n(%)','Músculo\n(kg)'];
   const colW = [28, 18, 16, 20, 22, 16, 16, 18];
   const rowH = 8;
@@ -2500,9 +2522,10 @@ function exportarPDF(){
   });
   y += rowH;
 
+  // Table rows
   const sorted = mediciones.slice().reverse();
   sorted.forEach((m, idx) => {
-    if(y > 270){
+    if(y > 270){ // new page
       doc.addPage();
       y = 20;
     }
@@ -2532,6 +2555,7 @@ function exportarPDF(){
       xOff += colW[i];
     });
 
+    // Row border bottom
     doc.setDrawColor(220, 220, 210);
     doc.setLineWidth(0.2);
     doc.line(10, y + rowH, pw - 10, y + rowH);
@@ -2539,6 +2563,7 @@ function exportarPDF(){
     y += rowH;
   });
 
+  // ── Notas / pie de página ───────────────
   y += 8;
   if(y < 260){
     doc.setFillColor(...CACAO);
@@ -2551,6 +2576,7 @@ function exportarPDF(){
     doc.text('Dr. Ángel Ernesto Sierra Ovando · Datos almacenados localmente · LFPDPPP', pw/2, 291, {align:'center'});
   }
 
+  // ── Guardar ─────────────────────────────
   const fname = `DMM_historial_${new Date().toISOString().slice(0,10)}.pdf`;
   doc.save(fname);
   showToast('📄 PDF generado: ' + fname);
@@ -2652,6 +2678,7 @@ function openModalEditProfile(){
 
 function saveProfile(){
   if(window.saveProfileFirebase){ window.saveProfileFirebase(); return; }
+  // Fallback sin Firebase
   if(!user) user={};
   user.name = document.getElementById('edit-name').value.trim() || user.name;
   user.email = document.getElementById('edit-email').value.trim() || user.email;
@@ -2688,6 +2715,8 @@ function openMenu(){ showToast('Menú de opciones'); }
 // ═══════════════════════════════════════════
 //  INIT
 // ═══════════════════════════════════════════
+// Firebase onAuthStateChanged maneja la navegación inicial.
+// loadState solo recupera caché local de mediciones.
 loadState();
 </script>
 </body>
